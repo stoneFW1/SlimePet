@@ -1,0 +1,35 @@
+name: BuildAPK
+
+on: [push, workflow_dispatch]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Unzip
+        run: |
+          ls -la
+          unzip -o SlimePet.zip -d src
+          ls -la src/SlimePet
+
+      - name: SetupGradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+
+      - name: Build
+        working-directory: src/SlimePet
+        run: gradle assembleDebug --no-daemon --stacktrace
+
+      - name: Upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: apk
+          path: src/SlimePet/app/build/outputs/apk/debug/*.apk
