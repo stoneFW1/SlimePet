@@ -2,6 +2,9 @@ name: BuildAPK
 
 on: [push, workflow_dispatch]
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -13,11 +16,32 @@ jobs:
           distribution: temurin
           java-version: '17'
 
+      - name: Check keystore
+        id: ks
+        run: |
+          if [ -f keystore.jks ]; then echo "found=yes" >> $GITHUB_OUTPUT; else echo "found=no" >> $GITHUB_OUTPUT; fi
+
+      - name: Create fixed keystore
+        if: steps.ks.outputs.found == 'no'
+        run: |
+          keytool -genkeypair -keystore keystore.jks -storetype JKS \
+            -storepass linlin123 -keypass linlin123 -alias pet \
+            -keyalg RSA -keysize 2048 -validity 10000 \
+            -dname "CN=Lin,O=SlimePet,C=CN"
+          git config user.email "pet-bot@users.noreply.github.com"
+          git config user.name "pet-bot"
+          git add keystore.jks
+          git commit -m "add fixed keystore [skip ci]"
+          git push origin HEAD:main || true
+
       - name: Unzip
         run: |
           ls -la
           unzip -o SlimePet.zip -d src
           ls -la src/SlimePet
+
+      - name: Provide keystore
+        run: cp keystore.jks src/SlimePet/app/pet.jks
 
       - name: SetupGradle
         uses: gradle/actions/setup-gradle@v4
