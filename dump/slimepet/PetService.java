@@ -1625,11 +1625,11 @@ public class PetService extends Service implements SensorEventListener {
                     /* Ollama Cloud 的模型都先思考：不关思考的话 content 是空的（接口其实 200 成功）。
                        reasoning_effort:none 让它直接给正文；不认这个参数的老端点会 400，那就去掉重试。 */
                     String[] r = postChat(url, key,
-                            MainActivity.chatBody(base, model, 400, ollama, sys, "现在给我 6 句。"));
+                            MainActivity.chatBody(base, model, 8000, ollama, sys, "现在给我 6 句。"));
                     int code = Integer.parseInt(r[0]);
                     if ((code == 400 || code == 422) && ollama) {
                         r = postChat(url, key,
-                                MainActivity.chatBody(base, model, 400, false, sys, "现在给我 6 句。"));
+                                MainActivity.chatBody(base, model, 8000, false, sys, "现在给我 6 句。"));
                         code = Integer.parseInt(r[0]);
                     }
                     String json = r[1];

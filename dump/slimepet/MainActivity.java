@@ -476,10 +476,10 @@ public class MainActivity extends Activity {
         boolean ollama = isOllama(base);
         try {
             String url = chatUrl(base);
-            String[] r = postJson(url, key, chatBody(base, model, 200, ollama, null, "说一句话，20字以内"));
+            String[] r = postJson(url, key, chatBody(base, model, 8000, ollama, null, "说一句话，20字以内"));
             int code = Integer.parseInt(r[0]);
             if ((code == 400 || code == 422) && ollama) {      /* 不认 reasoning_effort 的端点：去掉再来一次 */
-                r = postJson(url, key, chatBody(base, model, 200, false, null, "说一句话，20字以内"));
+                r = postJson(url, key, chatBody(base, model, 8000, false, null, "说一句话，20字以内"));
                 code = Integer.parseInt(r[0]);
             }
             if (code >= 200 && code < 300) {
