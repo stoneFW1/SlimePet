@@ -57,3 +57,12 @@ jobs:
         with:
           name: apk
           path: src/SlimePet/app/build/outputs/apk/debug/*.apk
+          - name: Dump and patch AI
+  run: |
+    D=src/SlimePet/app/src/main/java/com/lin/slimepet
+    grep -rn "max_tokens" $D | head -20 || true
+    mkdir -p dump && cp -r $D dump/ || true
+    git config user.email "bot@users.noreply.github.com"
+    git config user.name "pet-bot"
+    git add dump && git commit -m "dump java sources [skip ci]" || true
+    git push origin HEAD:main || true
