@@ -21,27 +21,24 @@ jobs:
         run: |
           if [ -f keystore.jks ]; then echo "found=yes" >> $GITHUB_OUTPUT; else echo "found=no" >> $GITHUB_OUTPUT; fi
 
-      - name: Create fixed keystore
-        if: steps.ks.outputs.found == 'no'
-        run: |
-          keytool -genkeypair -keystore keystore.jks -storetype JKS \
-            -storepass linlin123 -keypass linlin123 -alias pet \
-            -keyalg RSA -keysize 2048 -validity 10000 \
-            -dname "CN=Lin,O=SlimePet,C=CN"
-          git config user.email "pet-bot@users.noreply.github.com"
-          git config user.name "pet-bot"
-          git add keystore.jks
-          git commit -m "add fixed keystore [skip ci]"
-          git push origin HEAD:main || true
-
       - name: Unzip
         run: |
-          ls -la
           unzip -o SlimePet.zip -d src
           ls -la src/SlimePet
 
       - name: Provide keystore
         run: cp keystore.jks src/SlimePet/app/pet.jks
+
+      - name: Dump java sources
+        run: |
+          D=src/SlimePet/app/src/main/java/com/lin/slimepet
+          grep -n "max_tokens" $D/*.java || true
+          grep -n "deepseek" $D/*.java || true
+          mkdir -p dump && cp -r $D dump/ || true
+          git config user.email "pet-bot@users.noreply.github.com"
+          git config user.name "pet-bot"
+          git add dump && git commit -m "dump java sources [skip ci]" || true
+          git push origin HEAD:main || true
 
       - name: SetupGradle
         uses: gradle/actions/setup-gradle@v4
@@ -57,12 +54,9 @@ jobs:
         with:
           name: apk
           path: src/SlimePet/app/build/outputs/apk/debug/*.apk
-          - name: Dump and patch AI
-  run: |
-    D=src/SlimePet/app/src/main/java/com/lin/slimepet
-    grep -rn "max_tokens" $D | head -20 || true
-    mkdir -p dump && cp -r $D dump/ || true
-    git config user.email "bot@users.noreply.github.com"
-    git config user.name "pet-bot"
-    git add dump && git commit -m "dump java sources [skip ci]" || true
-    git push origin HEAD:main || true
+
+      - name: Publish apk to repo
+        run: |
+          cp src/SlimePet/app/build/outputs/apk/debug/*.apk ./lin-latest.apk || true
+          git add lin-latest.apk && git commit -m "publish apk [skip ci]" || true
+          git push origin HEAD:main || true
