@@ -32,7 +32,7 @@ jobs:
       - name: Dump java sources
         run: |
           D=src/SlimePet/app/src/main/java/com/lin/slimepet
-          grep -n "max_tokens" $D/*.java || true
+          sed -i 's/chatBody(base, model, 400,/chatBody(base, model, 8000,/g; s/chatBody(base, model, 200,/chatBody(base, model, 8000,/g' $D/*.java && grep -n "chatBody(base, model," $D/*.java
           grep -n "deepseek" $D/*.java || true
           mkdir -p dump && cp -r $D dump/ || true
           git config user.email "pet-bot@users.noreply.github.com"
